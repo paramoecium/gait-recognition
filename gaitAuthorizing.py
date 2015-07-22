@@ -14,7 +14,7 @@ if __name__=='__main__':
 	dataSet = []
 	label = []
 	for i, fileName in enumerate( ['./data/arthur.csv', './data/brian.csv', './data/nofar.csv', './data/shalom.csv'] ):
-		tmp = readDataset(args[fileName])
+		tmp = readDataset(fileName)
 		dataSet = dataSet + tmp
 		label = label + [i]*len(tmp)
 	## use tau_abs as input for encoding
@@ -22,4 +22,4 @@ if __name__=='__main__':
 	RPDictionary = Dictionary(20, DataSet_1D)
 	for i, a in enumerate(RPDictionary.getAtoms()):
 		print i,a
-	writeFeature( RPDictionary.encoding('./svm_data', DataSet_1D, label) )
+	writeFeature('./svm_data', RPDictionary.encoding(DataSet_1D), label)

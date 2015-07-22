@@ -37,13 +37,13 @@ class Instance:
 	def accel_abs(self):
 		accel = [0]*self.length
 		for i in range(self.length):
-			accel[i] = (accel_1[i]**2,accel_2[i]**2,accel_3[i]**2)**0.5
+			accel[i] = (self.accel_1[i]**2 + self.accel_2[i]**2 + self.accel_3[i]**2)**0.5
 		return accel
 	
 	def tau_abs(self):
 		tau = [0]*self.length
 		for i in range(self.length):
-			tau[i] = (tau_1[i]**2,tau_2[i]**2,tau_3[i]**2)**0.5
+			tau[i] = (self.tau_1[i]**2 + self.tau_2[i]**2 + self.tau_3[i]**2)**0.5
 		return tau
 
 	def get_length(self):
