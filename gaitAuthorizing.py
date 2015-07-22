@@ -18,8 +18,8 @@ if __name__=='__main__':
 		dataSet = dataSet + tmp
 		label = label + [i]*len(tmp)
 	## use tau_abs as input for encoding
-	1D_DataSet = [I.tau_abs() for I in dataSet]
-	RPDictionary = Dictionary(20, 1D_DataSet)
+	DataSet_1D = [I.tau_abs() for I in dataSet]
+	RPDictionary = Dictionary(20, DataSet_1D)
 	for i, a in enumerate(RPDictionary.getAtoms()):
 		print i,a
-	writeFeature(RPDictionary.encoding('./svm_data', 1D_DataSet, label)
+	writeFeature( RPDictionary.encoding('./svm_data', DataSet_1D, label) )
