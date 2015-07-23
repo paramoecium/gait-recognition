@@ -43,7 +43,7 @@ if __name__=='__main__':
 	## SVM predicting
 	data_test_accel = [I.accel_abs() for I in data_test]
 	data_test_tau = [I.tau_abs() for I in data_test]
-    X_test = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_test_accel), RPDictionary_tau.encoding(data_test_tau) ) ]
+        X_test = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_test_accel), RPDictionary_tau.encoding(data_test_tau) ) ]
 	Y_test = label_test
 	writeFeature('./svm_train', X_test, Y_test) 
 	p_labels, p_acc, p_vals = svm_predict(Y_test, X_test, model)
