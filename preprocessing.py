@@ -31,20 +31,20 @@ class Instance:
 		self.accel_1 = rawData[:,1]
 		self.accel_2 = rawData[:,2]
 		self.accel_3 = rawData[:,3]
-		self.tau_1 = rawData[:,4]
-		self.tau_2 = rawData[:,5]
-		self.tau_3 = rawData[:,6]
+		self.alpha_1 = rawData[:,4]
+		self.alpha_2 = rawData[:,5]
+		self.alpha_3 = rawData[:,6]
 	def accel_abs(self):
 		accel = [0]*self.length
 		for i in range(self.length):
 			accel[i] = (self.accel_1[i]**2 + self.accel_2[i]**2 + self.accel_3[i]**2)**0.5
 		return accel
 	
-	def tau_abs(self):
-		tau = [0]*self.length
+	def alpha_abs(self):
+		alpha = [0]*self.length
 		for i in range(self.length):
-			tau[i] = (self.tau_1[i]**2 + self.tau_2[i]**2 + self.tau_3[i]**2)**0.5
-		return tau
+			alpha[i] = (self.alpha_1[i]**2 + self.alpha_2[i]**2 + self.alpha_3[i]**2)**0.5
+		return alpha
 
 	def get_length(self):
 		return self.length
