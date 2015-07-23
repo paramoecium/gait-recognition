@@ -29,20 +29,22 @@ if __name__=='__main__':
 	data_train_tau = [I.tau_abs() for I in data_train]
 	RPDictionary_accel = Dictionary(50, data_train_accel)
 	RPDictionary_tau = Dictionary(50, data_train_tau)
-        aggregate_feature = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_train_accel), RPDictionary_tau.encoding(data_train_tau) ) ]
-	writeFeature('./svm_data', aggregate_feature, label_train) 
-
-	data_test_accel = [I.accel_abs() for I in data_test]
-	data_test_tau = [I.tau_abs() for I in data_test]
+	aggregate_feature = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_train_accel), RPDictionary_tau.encoding(data_train_tau) ) ]
+	writeFeature('./svm_train', aggregate_feature, label_train) 
+	
+	## SVM training
 	Y_train = label_train
-        X_test = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_test_accel), RPDictionary_tau.encoding(data_test_tau) ) ]
-        Y_test = label_test
-
-        classNum, X_train = svm_read_problem('./svm_data')
+	classNum, X_train = svm_read_problem('./svm_data')
 	prob = svm_problem(Y_train, X_train)
 	param = svm_parameter('-q')
 	model = svm_train(prob, param)
-	#print model
 	svm_save_model('./svm_model',model)
-        p_labels, p_acc, p_vals = svm_predict(Y_test, X_test, model)
-        print p_acc
+
+	## SVM predicting
+	data_test_accel = [I.accel_abs() for I in data_test]
+	data_test_tau = [I.tau_abs() for I in data_test]
+    X_test = [ f[0]+f[1] for f in zip( RPDictionary_accel.encoding(data_test_accel), RPDictionary_tau.encoding(data_test_tau) ) ]
+	Y_test = label_test
+	writeFeature('./svm_train', X_test, Y_test) 
+	p_labels, p_acc, p_vals = svm_predict(Y_test, X_test, model)
+	print p_acc
