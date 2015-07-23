@@ -25,6 +25,7 @@ def dynamicTimeWarp(seqA, seqB, d = lambda x,y: abs(x-y), print_flag = False):
 				print "%03d" % entry,
 			print ""
 	return cost[-1][-1]
+
 def writeFeature(fileName, instances, label=[]):
 	# wtite features into libsvm format
 	if len(label) == 0:
@@ -39,6 +40,17 @@ def writeFeature(fileName, instances, label=[]):
 					feature_str = ' '.join( [feature_str, ':'.join([str(i),str(f)])] )
 			print >> fw, ' '.join([ str(int(label[j])), feature_str ])
 	return
+
+def readFeature(fileName):
+	features = []
+	labels = []
+	with open(fileName, 'r') as fr:
+		for line in fr:
+			line = line.split()
+			instance = [ float(f.split(':')[-1]) for f in line[1:] ]
+			features.append(instance)
+			labels.append(int(line[0]))
+	return features, labels
 
 class Dictionary:
 	def __init__(self, atomNum, instances, distType = 'DTW'):
