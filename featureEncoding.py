@@ -41,13 +41,16 @@ def writeFeature(fileName, instances, label=[]):
 			print >> fw, ' '.join([ str(int(label[j])), feature_str ])
 	return
 
-def readFeature(fileName):
+def readFeature(fileName, featureNum):
 	features = []
 	labels = []
 	with open(fileName, 'r') as fr:
 		for line in fr:
 			line = line.split()
-			instance = [ float(f.split(':')[-1]) for f in line[1:] ]
+			instance = [0]*featureNum
+			for f in line[1:]:
+				i = int( f.split(':')[0] )
+				instance[i] = float(f.split(':')[-1])
 			features.append(instance)
 			labels.append(int(line[0]))
 	return features, labels
