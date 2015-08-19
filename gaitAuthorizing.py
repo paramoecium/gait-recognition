@@ -15,7 +15,8 @@ if __name__=='__main__':
 	args = vars(args)
 	dataSet = []
 	label = []
-	for i, fileName in enumerate( ['./data/arthur.csv', './data/brian.csv', './data/nofar.csv', './data/shalom.csv'] ):
+	#for i, fileName in enumerate( ['./dataset1/arthur.csv', './dataset1/brian.csv', './dataset1/nofar.csv', './dataset1/shalom.csv'] ):
+	for i, fileName in enumerate( ['./dataset2/avon.csv', './dataset2/brian_merge.csv', './dataset2/mon1.csv', './dataset2/nofar_merge.csv'] ):
 		tmp = readDataset(fileName) # array of Instance
 		dataSet = dataSet + tmp
 		label = label + [i]*len(tmp)
