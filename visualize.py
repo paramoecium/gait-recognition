@@ -18,11 +18,6 @@ if __name__=='__main__':
     X_train, Y_train = readFeature('./svm_train', featureNum)
     colors = np.random.rand(len(Y_train))
     colors = Y_train
-    X_train = [X_train[i] for i in range(len(X_train)) if Y_train[i]!=3]
-    colors = [Y_train[i] for i in range(len(Y_train)) if Y_train[i]!=3]
-    colorMap = {0:'green',1:'red',2:'yellow'}
-    colors = [colorMap[c] for c in colors]
-    print colors
     X_iso = manifold.Isomap(n_neighbors=10, n_components=3).fit_transform(X_train)
     '''
     plt.scatter(X_iso[:,0], X_iso[:,1], c=colors)
