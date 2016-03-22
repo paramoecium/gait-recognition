@@ -24,7 +24,7 @@ def dynamicTimeWarp(seqA, seqB, d = lambda x,y: abs(x-y), print_flag = False):
 			for entry in row:
 				print "%03d" % entry,
 			print ""
-	return cost[-1][-1]
+	return cost
 
 def writeFeature(fileName, instances, label=[]):
 	# wtite features into libsvm format
@@ -70,7 +70,7 @@ class Dictionary:
 		return self.atoms
 	def __dist(self, seqA, seqB):
 		if self.distType == 'DTW':
-			return dynamicTimeWarp(seqA, seqB)
+			return dynamicTimeWarp(seqA, seqB)[-1][-1]
 		else:
 			print 'distType ERROR!'
 			return
@@ -80,6 +80,6 @@ if __name__ == '__main__':
 	seqB = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 12, 24, 23, 8 ,3, 1, 0, 0, 0, 0, 0]
 	print 'seqA', seqA
 	print 'seqB', seqB
-	print 'cost =', dynamicTimeWarp(seqA, seqB)
+	print 'cost =', dynamicTimeWarp(seqA, seqB)[-1][-1]
 	RPDictionary = Dictionary(2, [seqA, seqB])
 	writeFeature('./deleteMe', RPDictionary.encoding([seqA, seqB]))

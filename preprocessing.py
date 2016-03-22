@@ -23,6 +23,49 @@ def readDataset(filepath):
 	dataSet.append( Instance(data[range(last_i, len(index)),:]) )
 	return dataSet # return an array of Instance
 
+def pattern_mining():
+    import os
+    # compute cross-similarity and dicover repeating subsequence
+    sensor_data = data = np.genfromtxt('./ICS_slipperData/Alice0105db.csv', dtype=float, delimiter=',', names=True)
+    timestamp = sensor_data['Timestamp']
+    signal = sensor_data['Axis2']
+    SDIR='./crossmatch/CrossMatch'	# Directory of source files
+    DDIR='./match_data'	            # Directory of data sequences
+    RESULT='.'                      # Directory to output results
+    LMIN = 1000		                # Subsequence length threshold: lmin
+    EPS = 0.1                       # Distance threshold: epsilon
+    '''
+    axis1:epsilon:0.18 lmin:300
+    axis2:epsilon:0.2  lmin:0.19
+    '''
+    BAND = 5000		                # Width of Sakoe-Chiba band: w
+    #XLEN= len(signal)		        # Sequence length of X
+    XLEN = 10000   
+    SFILE = RESULT+'/result.txt'    # Result file name for similar subsequence pairs
+    PFILE = RESULT+'/path.txt'      # Result file name for optimal warping paths
+    #np.savetxt('{}/signal.dat'.format(DDIR),signal,fmt='%f')
+
+    commands = []
+    # Detect similar subsequence pairs
+    commands.append('{}/crossmatch {}/signal.dat {}/signal.dat {} {} {} > {}'.format(SDIR,DDIR,DDIR,LMIN,EPS,BAND,SFILE))
+    commands.append('wc -l {}'.format(SFILE))
+    # Compute warping paths
+    commands.append('perl {}/createfile.pl {} {}/exefile.sh {}/checkfile {}/signal.dat {}/signal.dat {} {} {} {}'.format(SDIR,SFILE,RESULT,RESULT,DDIR,DDIR,LMIN,EPS,BAND,PFILE))
+    commands.append('sh {}/exefile.sh'.format(RESULT))
+    commands.append('{}/path {}/checkfile {} {}'.format(SDIR,RESULT,EPS,XLEN))
+    commands.append('perl {}/gnuplot.pl {} {} {}'.format(SDIR,RESULT,XLEN,XLEN))
+    commands.append('gnuplot {}/load_dat'.format(RESULT))
+    commands.append('rm {}/load_dat'.format(RESULT))
+    commands.append('rm {}/checkfile'.format(RESULT))
+    commands.append('rm {}/exefile.sh'.format(RESULT))
+    commands.append('rm {}/temp.txt'.format(RESULT))
+    commands.append("find -name 'Subseq*' -delete")
+    commands.append('mv {}/path.txt {}/'.format(RESULT,DDIR))
+    commands.append('mv {}/result.txt {}/'.format(RESULT,DDIR))
+    for c in commands:
+        print c
+        os.system(c)
+
 class Instance:
 	def __init__(self,rawData):
 		#print rawData

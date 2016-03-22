@@ -1,0 +1,9 @@
+Subseq1.txt  ./match_data/path.txt  2889  4856  1771  3658
+Subseq2.txt  ./match_data/path.txt  3816  5476  1562  3155
+Subseq3.txt  ./match_data/path.txt  4182  5526  1662  3004
+Subseq4.txt  ./match_data/path.txt  4451  5525  2943  4076
+Subseq5.txt  ./match_data/path.txt  5527  5527  1  1
+Subseq6.txt  ./match_data/path.txt  4856  2889  3658  1771
+Subseq7.txt  ./match_data/path.txt  5525  4451  4076  2943
+Subseq8.txt  ./match_data/path.txt  5526  4182  3004  1662
+Subseq9.txt  ./match_data/path.txt  5476  3816  3155  1562

@@ -1,0 +1,85 @@
+1. Introduction
+
+This is a C code set of CrossMatch. The files include two CrossMatch 
+programs: original and sampling approaches.
+The details of CrossMatch are described in the following paper:
+
+ Machiko Toyoda, Yasushi Sakurai, and Yoshiharu Ishikawa:
+ ``Pattern Discovery in Data Streams under the Time Warping Distance,''
+ VLDB Journal
+
+
+2. Quick demo
+
+  -- CrossMatch original approach 
+      Folder: CrossMatch
+
+    (*) Compile source files
+	$ make all
+
+    (i) Detect similar subsequence pairs with synthetic datasets
+	Result file name: result.txt
+
+	$ sh demo.sh
+
+    (ii) Plot optimal warping paths of similar subsequence pairs
+	   (Require perl and gnuplot for the demo)
+	 Result file name: result.txt and path.txt
+	 Plot file name: fig.eps
+
+	$ sh demo-path.sh
+
+
+  -- CrossMatch sampling approach (fixed sampling period only)
+      Folder: Sampling
+
+    (*) Compile source files
+	$ make all
+
+    (i) Detect similar subsequence pairs with synthetic datasets
+	Result file name: result-sampling.txt
+
+	$ sh demo-sampling.sh
+
+    (ii) Plot optimal warping paths of similar subsequence pairs
+	  (Require perl and gnuplot for the demo)
+	Result file name: result-sampling.txt and path-sampling.txt
+	Plot file name: fig-sampling.eps
+
+	$ sh demo-sampling-path.sh
+
+
+3. Details of each file
+
+ ** result.txt and result-sampling.txt
+    The first column represents subsequences of X, i.e., X[is:ie].
+    'is' is a starting position and 'ie' is a ending position.
+    Similarily, the second column represents subsequences of Y, 
+    i.e., Y[js:je]. The third column represents DTW distances and 
+    the forth column represents score values. For example, 
+
+     X[    9: 7644]  Y[ 1805: 9995]   DTWdist: 32.8  score: 362.88
+
+    the subsequence of X starting from time-tick 9 and ending at 7644 
+    and the subsequence of Y starting from time-tick 1805 and ending
+    at 9995 are one of optimal subsequence pairs. Their DTW distance 
+    is 32.8 and their score is 362.88. 
+
+ ** CrossMatch/crossmatch.c, Sampling/crossmatch-sampling.c
+    Main programs of CrossMatch. In each files, initial settings are 
+    pattern discovery. If you want to measure the computation time, 
+    please set EXPERIMENT value (#define parameter) at 0.
+
+ ** CrossMatch/path.c Sampling/path.c
+    A program for calculating optimal warping paths. To run path.c, 
+    you need to create matrix log files of every starting position 
+    by using createfile.pl or createfile-sampling.pl. 
+
+ ** CrossMatch/naive.c
+    A program for naive solution. you can compile it by the command
+    'make naive'. 
+
+
+4. Others
+
+This is version 1.0. (August 3, 2012)
