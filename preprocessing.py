@@ -10,20 +10,28 @@ def readFile(filepath):
 	return data
 
 def readDataset(filepath):
-	data = np.array( readFile(filepath) )
-	dataSet = [] # array of Instance
-	index = data[:,0]
-	last_i = 0
-	for i, shift in enumerate(index):
-		if shift == 0:
-			if(last_i != i):
-				dataSet.append( Instance(data[range(last_i, i),:]) )
-			last_i = i
-	
-	dataSet.append( Instance(data[range(last_i, len(index)),:]) )
-	return dataSet # return an array of Instance
+    '''# USAGE:
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('filePath', type=str, help='filePath')
+    args = argparser.parse_args()
+    args = vars(args)
+    dataSet = readDataset(args['filePath'])
+    print 'number of lines in the file :',sum([I.get_length() for I in dataSet])
+    '''
+    data = np.array( readFile(filepath) )
+    dataSet = [] # array of Instance
+    index = data[:,0]
+    last_i = 0
+    for i, shift in enumerate(index):
+        if shift == 0:
+            if(last_i != i):
+	            dataSet.append( Instance(data[range(last_i, i),:]) )
+            last_i = i
 
-def pattern_mining():
+    dataSet.append( Instance(data[range(last_i, len(index)),:]) )
+    return dataSet # return an array of Instance
+
+def cross_match():
     import os
     # compute cross-similarity and dicover repeating subsequence
     sensor_data = data = np.genfromtxt('./ICS_slipperData/Alice0105db.csv', dtype=float, delimiter=',', names=True)
@@ -66,6 +74,59 @@ def pattern_mining():
         print c
         os.system(c)
 
+def salience_vector(signal_sample, arg_func=np.argmax):
+    '''# DEBUG:
+    signal_sample = [5,2,1,1,1,4,1,1,1,6,4,3,7,9,6,8]
+    print salience_vector(signal_sample, arg_func=np.argmax)
+    '''
+    signal = np.array(signal_sample)
+    len_signal = len(signal)
+    len_interval = 2.0
+    salience_vector = np.ones(len_signal)
+    while len_interval <= len_signal:
+        update = np.zeros(len_signal)
+        num_interval = np.ceil(len_signal/len_interval).astype(int)
+        for i in xrange(num_interval):
+            local_argpeak = arg_func(signal[i*len_interval:min((i+1)*len_interval, len_signal)])
+            if (i+1)*len_interval <= len_signal:
+                update[i*len_interval+local_argpeak] = len_interval
+            else:
+                update[i*len_interval+local_argpeak] = len_signal%len_interval
+        #print update.astype(list)
+        salience_vector = np.maximum(salience_vector, update)
+        len_interval += 1
+    return salience_vector.astype(list)
+
+def cycle_extraction(signal_sampled, sample_frequency):
+    max_signal_salience = salience_vector(signal_sampled, np.argmax)
+    min_signal_salience = salience_vector(signal_sampled, np.argmin)
+    # assume frequency of human walking ~= 1.7Hz (1.5Hz~2.5Hz)
+    walking_frequency_min = 0.7
+    walking_frequency_max = 2.0
+    l_min = sample_frequency/walking_frequency_max
+    l_max = sample_frequency/walking_frequency_min
+    h_min = 2*l_min
+    signal = np.array(signal_sampled)
+    len_signal = len(signal)
+    peaks = []
+    print h_min, l_min, l_max
+    for t in xrange(len_signal):
+        if max_signal_salience[t] < h_min: continue
+        if len(peaks) != 0: 
+            l = t - peaks[-1][0]
+        if len(peaks) == 0 or (l > l_min and l < l_max):
+            #print [t,signal[t]]
+            peaks.append([t,max_signal_salience[t]])
+    cycle_lengths = []
+    for i in xrange(1,len(peaks)):
+        cycle_lengths.append(peaks[i][0]-peaks[i-1][0])
+    #print cycle_lengths
+    print 'number of cycles:', len(cycle_lengths)
+    print 'cycle length stat:', 'mean', np.mean(cycle_lengths), 'std', np.std(cycle_lengths)
+    peaks = np.array(peaks)
+    cycles = np.array([peaks[:-1,0], peaks[1:,0], cycle_lengths])
+    return cycles.T # (start, end, length)
+
 class Instance:
 	def __init__(self,rawData):
 		#print rawData
@@ -91,10 +152,7 @@ class Instance:
 
 	def get_length(self):
 		return self.length
-if __name__ == '__main__':
-	argparser = argparse.ArgumentParser()
-	argparser.add_argument('filePath', type=str, help='filePath')
-	args = argparser.parse_args()
-	args = vars(args)
-	dataSet = readDataset(args['filePath'])
-	print 'number of lines in the file :',sum([I.get_length() for I in dataSet])
+if __name__ == '__main__':    
+    signal_sample = [5,2,1,1,1,4,1,1,1,6,4,3,7,9,6,8]
+    print salience_vector(signal_sample, arg_func=np.argmin)
+    pass
