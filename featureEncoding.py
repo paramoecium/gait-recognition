@@ -1,6 +1,7 @@
 import math
 import random
- 
+import numpy as np
+
 def dynamicTimeWarp(seqA, seqB, d = lambda x,y: abs(x-y), print_flag = False):
 	# create the cost matrix
 	numRows, numCols = len(seqA), len(seqB)
@@ -25,6 +26,32 @@ def dynamicTimeWarp(seqA, seqB, d = lambda x,y: abs(x-y), print_flag = False):
 				print "%03d" % entry,
 			print ""
 	return cost
+
+def dtwDistanceMatrix(instances, metric='dtw',down_sample = True):
+    # O(n^3), down sampling is imperative
+    DOWN_SAMPLING_RATIO = 10
+    l = len(instances)
+    w = len(instances[0])
+    if down_sample:
+        instances_low = np.zeros((l,w//DOWN_SAMPLING_RATIO))
+        for i in xrange(l):
+            instance = np.array(instances[i])
+            instances_low[i] = instance[range(0,w,DOWN_SAMPLING_RATIO)]
+        instances = instances_low
+    print instances.shape
+    d = np.ones((l,l)) * -1
+    for i in xrange(l):
+        for j in xrange(i+1):
+            if 'dtw' in metric:
+                distance = dynamicTimeWarp(instances[i], instances[j])[-1][-1]
+            elif 'euclidean' in metric:
+                distance = np.linalg.norm(instances[i] - instances[j], ord=10)
+            else:
+                print 'No such metric!'
+            d[i,j] = distance
+            d[j,i] = distance
+    return d
+            
 
 def writeFeature(fileName, instances, label=[]):
 	# wtite features into libsvm format

@@ -81,11 +81,11 @@ def salience_vector(signal_sample, arg_func=np.argmax):
     '''
     signal = np.array(signal_sample)
     len_signal = len(signal)
-    len_interval = 2.0
+    len_interval = 2
     salience_vector = np.ones(len_signal)
     while len_interval <= len_signal:
         update = np.zeros(len_signal)
-        num_interval = np.ceil(len_signal/len_interval).astype(int)
+        num_interval = np.ceil(float(len_signal)/len_interval).astype(int)
         for i in xrange(num_interval):
             local_argpeak = arg_func(signal[i*len_interval:min((i+1)*len_interval, len_signal)])
             if (i+1)*len_interval <= len_signal:
@@ -102,29 +102,35 @@ def cycle_extraction(signal_sampled, sample_frequency):
     min_signal_salience = salience_vector(signal_sampled, np.argmin)
     # assume frequency of human walking ~= 1.7Hz (1.5Hz~2.5Hz)
     walking_frequency_min = 0.7
-    walking_frequency_max = 2.0
+    walking_frequency_max = 2.5
     l_min = sample_frequency/walking_frequency_max
     l_max = sample_frequency/walking_frequency_min
     h_min = 2*l_min
     signal = np.array(signal_sampled)
     len_signal = len(signal)
     peaks = []
-    print h_min, l_min, l_max
     for t in xrange(len_signal):
         if max_signal_salience[t] < h_min: continue
-        if len(peaks) != 0: 
+        if len(peaks) == 0:
+            peaks.append([t,max_signal_salience[t]])
+            continue
+        else:
             l = t - peaks[-1][0]
-        if len(peaks) == 0 or (l > l_min and l < l_max):
+        if l > l_min and l < l_max:
             #print [t,signal[t]]
             peaks.append([t,max_signal_salience[t]])
+        else:
+            print '    violatino:',t
     cycle_lengths = []
     for i in xrange(1,len(peaks)):
         cycle_lengths.append(peaks[i][0]-peaks[i-1][0])
-    #print cycle_lengths
-    print 'number of cycles:', len(cycle_lengths)
-    print 'cycle length stat:', 'mean', np.mean(cycle_lengths), 'std', np.std(cycle_lengths)
     peaks = np.array(peaks)
-    cycles = np.array([peaks[:-1,0], peaks[1:,0], cycle_lengths])
+    cycles = np.array([peaks[:-1,0], peaks[1:,0], cycle_lengths]).astype(int)
+    #print cycle_lengths
+    print '(h_min, l_min, l_max) =', h_min, l_min, l_max
+    print 'number of cycles detected:', cycles.shape[1]
+    print 'cycle length statistics:', 'mean', np.mean(cycle_lengths), 'std', np.std(cycle_lengths)
+    assert cycles.shape[1] > 0, 'No Cycle Detected!!'
     return cycles.T # (start, end, length)
 
 class Instance:
@@ -154,5 +160,5 @@ class Instance:
 		return self.length
 if __name__ == '__main__':    
     signal_sample = [5,2,1,1,1,4,1,1,1,6,4,3,7,9,6,8]
-    print salience_vector(signal_sample, arg_func=np.argmin)
+    print salience_vector(signal_sample, arg_func=np.argmax)
     pass

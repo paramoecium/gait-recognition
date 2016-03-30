@@ -49,16 +49,17 @@ def draw_cross_similarity():
     plt.show()
 
 def draw_signal():
+    output_dir = './slipper_output/Charlie/'
+    sensor_data = data = np.genfromtxt('./ICS_slipperData/Charlie0105db.csv', dtype=float, delimiter=',', names=True)
+    
     from scipy.interpolate import interp1d
     print 'original...'
-    sensor_data = data = np.genfromtxt('./ICS_slipperData/Alice0105db.csv', dtype=float, delimiter=',', names=True)
-    timestamp = sensor_data['Timestamp'][2100:2500]
-    signal = sensor_data['Axis1'][2100:2500]
+    timestamp = sensor_data['Timestamp']
+    signal = sensor_data['Axis1']
     plt.figure(figsize=(16, 6), dpi=100)
     plt.xlim(timestamp[0], timestamp[-1])
     plt.plot(timestamp, signal)
-    plt.savefig('signal_original.png',dpi=500)
-    return
+    plt.savefig(output_dir+'signal_original.png',dpi=500)
     
     print 'interpolation...'
     sample_frequency = 1000.0
@@ -69,7 +70,7 @@ def draw_signal():
     plt.xlim(timestamp[0], timestamp[-1])
     plt.title("sample frequency={}Hz".format(sample_frequency))
     plt.plot(timestamp_sampled, signal_sampled)
-    plt.savefig('signal_sample.png',dpi=500)
+    plt.savefig(output_dir+'signal_sample.png',dpi=500)
 
     print 'filtering...'
     from scipy.signal import butter, lfilter
@@ -84,7 +85,8 @@ def draw_signal():
     plt.xlim(timestamp[0], timestamp[-1])
     plt.title("sample frequency={}Hz, low-pass cutoff={}Hz".format(sample_frequency,highcut))
     plt.plot(timestamp_sampled, signal_filtered)
-    plt.savefig('signal_filtered_{}.png'.format(highcut),dpi=500)
+    plt.savefig(output_dir+'signal_filtered_{}.png'.format(highcut),dpi=500)
+    f = interp1d(timestamp_sampled, signal_filtered, kind='slinear')
 
     print 'cycle detection...'
     from preprocessing import cycle_extraction
@@ -96,23 +98,50 @@ def draw_signal():
     target_cycle_length = int(median_cycle[2])
     signals_warped = []
     plt.figure(figsize=(8, 6), dpi=100)
+    plt.xlim(0, target_cycle_length-1)
     for cycle in cycles:
         timestamp_start = timestamp_sampled[cycle[0]]
         timestamp_end = timestamp_sampled[cycle[1]]
-        signal_cropped = signal_sampled[cycle[0]:cycle[1]]
-        timestamp_warped = np.arange(timestamp_start, timestamp_end, (timestamp_end-timestamp_start)/(target_cycle_length-1))
+        timestamp_warped = np.linspace(timestamp_start, timestamp_end, num=target_cycle_length, endpoint=False)
         assert len(timestamp_warped)==target_cycle_length, '{}!={}'.format(len(timestamp_warped),target_cycle_length)
         signals_warped.append(f(timestamp_warped))
         plt.plot(xrange(target_cycle_length), signals_warped[-1])
-    np.mean(signals_warped,axis=0)
-    np.std(signals_warped,axis=0)
-    signals_warped_stat = np.array([np.mean(signals_warped,axis=0),np.std(signals_warped,axis=0)])
+        print '    plot:', cycle
+    plt.title("warped cycles of Alice0105db Axis1")
+    plt.savefig(output_dir+'cycle_warped.png',dpi=500)
+    np.save(output_dir+'signals_warped.npy', signals_warped)
+    
+    signals_warped = np.load('./signals_warped.npy')
+    from featureEncoding import dtwDistanceMatrix
+    #distance_matrix = dtwDistanceMatrix(signals_warped, metric='euclidean', down_sample = False)
+    distance_matrix = dtwDistanceMatrix(signals_warped, metric='dtw', down_sample = True)
+    np.save(output_dir+'distance_matrix.npy', distance_matrix)
+    
+    signals_warped = np.load('./signals_warped.npy')
+    distance_matrix = np.load('./distance_matrix.npy')
+    means = np.mean(distance_matrix, axis=1)
+    plt.figure(figsize=(8, 6), dpi=100)
+    plt.title("representative cycle of Alice0105db Axis1")
+    plt.plot(signals_warped[np.argmin(means)])
+    plt.savefig(output_dir+'cycle_best.png',dpi=500)
+    mask = means < np.mean(means)-0.5*np.std(means)
+    print '    Selected:', sum(mask)
+    signals_selected = signals_warped[mask]
+    
+    plt.figure(figsize=(8, 6), dpi=100)
+    #plt.xlim(0, target_cycle_length-1)
+    for signal in signals_selected:
+        plt.plot(signal)
+    plt.title("selected cycles of Alice0105db Axis1")
+    plt.savefig(output_dir+'cycle_selected.png',dpi=500)
+        
+    signals_warped_stat = np.array([np.mean(signals_selected,axis=0),np.std(signals_selected,axis=0)])
+    plt.figure(figsize=(8, 6), dpi=100)
     plt.title("envelope of Alice0105db Axis1")
-    plt.plot(xrange(target_cycle_length), signal_sampled[median_cycle[0]:median_cycle[1]])
-    plt.plot(xrange(target_cycle_length), signals_warped_stat[0])
-    plt.plot(xrange(target_cycle_length), np.add(signals_warped_stat[0],signals_warped_stat[1]),'--')
-    plt.plot(xrange(target_cycle_length), np.subtract(signals_warped_stat[0],signals_warped_stat[1]),'--')
-    plt.savefig('cycle_envelope.png',dpi=500)
+    plt.plot(signals_warped_stat[0])
+    plt.plot(np.add(signals_warped_stat[0],signals_warped_stat[1]),'--')
+    plt.plot(np.subtract(signals_warped_stat[0],signals_warped_stat[1]),'--')
+    plt.savefig(output_dir+'cycle_envelope.png',dpi=500)
 
 def draw_frequency_response(b,a):
     from scipy.signal import freqs
